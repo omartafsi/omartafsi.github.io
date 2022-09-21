@@ -276,7 +276,6 @@ compress_html:
   ignore:
     envs: development
 
-theme: minimal-mistakes-jekyll
 # Defaults
 defaults:
   # _posts
