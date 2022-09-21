@@ -105,8 +105,8 @@ analytics:
 # Site Author
 author:
   name             : "Omar TAFSI"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "I am R&D engineer working to find new ways of detecting bots"
+  avatar           : "/assets/images/bio-photo.jpg"
+  bio              : "R&D engineer"
   location         : "Paris"
   email            : "omar.tafsi@gmail.com"
   links:
