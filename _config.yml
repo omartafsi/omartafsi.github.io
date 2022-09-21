@@ -104,9 +104,9 @@ analytics:
 
 # Site Author
 author:
-  name             : " "
+  name             : "R&D engineer"
   avatar           : "/assets/images/bio-photo.jpg"
-  bio              : "R&D engineer"
+  bio              : "Models and bots"
   location         : "Paris"
   email            : "omar.tafsi@gmail.com"
   links:
