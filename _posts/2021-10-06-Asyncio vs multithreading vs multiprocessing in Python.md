@@ -8,7 +8,6 @@ published: true
 Let's say you have the task of crawling 500 URLs, one way to do it is to run a for loop where you call 1 URL at a time on every iteration using the following code:
 
 ```python
-
 for url in url_list:
 	requests.get(url)
 ```
@@ -157,7 +156,6 @@ def multiprocessing_scraper(urls):
 Yes, it is, the idea is to implement all the Asyncio logic on multiple cores, here is an example where we are making requests on a list of URLs with a combination of parallelism and Asyncio:
 
 ```python
-
 from concurrent.futures import  as_completed, ProcessPoolExecutor
 import aiohttp
 import asyncio
@@ -221,7 +219,6 @@ I have run the four scrapers featured above on a list of the most visited domain
 For the 10 URLS list, the results are the following:
 
 ```python
-
 Function 'multithreading_scraper' executed in 5.1004s
 Function 'multiprocessing_scraper' executed in 5.4535s
 Function 'async_aiohttp_scraper' executed in 1.6210s
