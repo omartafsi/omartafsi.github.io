@@ -1,50 +1,45 @@
 ---
 published: true
 ---
-## Python's implementations of concurrency and parallelism.
 
-Let's say you have the task of crawling a list of 500 URLs, one way to do it is to run a for loop where you call 1 URl at a time on every iteration using the following code:
 
+## Asyncio vs multithreading vs multiprocessing in Python
+
+Let's say you have the task of crawling a list of 500 URLs, one way to do it is to run a for loop where you call 1 URL at a time on every iteration using the following code:
 
 ```python
 
 for url in url_list:
 	requests.get(url)
-    # add you post processing
-    
 ```
 
 
-As you may have guessed, this is not the most optimal way to do it, this is because our program will be blocked on every iteration while waiting to receive the HTTP response of the requests.
+As you may have guessed, this is not the most optimal way to do it, this is because our program will be blocked on every iteration waiting to receive the HTTP response of the requests.
 
-What if during the time our program is blocked waiting for the HTTP response, we have it process something else, for instance, send another request. This can be done via the two techniques called **Asyncio** and **multithreading**.
+What if during the time our program is blocked waiting for the HTTP response, we have it process something else, for instance, send another request. This can be done via **Asyncio** and **multithreading**.
 
-Or, because the HTTP request operation is not complex, we code our program in a way that every core of our processor sends requests independently instead of having the whole processor being blocked waiting for one request. This can be achieved with **multiprocessing**.
+Or, because the HTTP request operation is not complex, we code our program in a way that the requests are spread across different cores of our processor instead of having all the cores making one request at a time. This can be achieved with **multiprocessing**.
 
-Before going into comparison, let's explicitly define some concepts that are necessary to grasp in order to understand the differences between Async, multithreading, and multiprocessing.
+Before going into comparison, let's explicitly define some concepts that are necessary to understand the differences between Async, multithreading, and multiprocessing.
 
 
 ## Concurrency vs parallelism:
 
 ### Concurrency:  
-  
-  
-By definition, concurrency is the ability to perform multiple tasks simultaneously.   
 
-In python, we can define concurrency as the ability to optimally execute multiple threads in a way that reduces blockage time, a thread here referring to a set of instructions running in order. This Subtle difference is because python has a mechanism called Global Interpreter Lock (GIL) insuring that only one thread is in the execution state at any point in time, This is because CPython (the reference implementation of python) is not thread-safe. This results in never achieving true simultaneous concurrency using multithreading in Python.
+In python, we can define concurrency as the ability to optimally execute multiple threads in a way that reduces blockage time, a thread here referring to a set of instructions running in order. It is based on the Global Interpreter Lock (GIL) mechanism insuring that only one thread is in the execution state at any point in time, This is because CPython (the reference implementation of python) is not thread-safe. This results in never achieving true simultaneous concurrency using multithreading in Python.
 
 To make an analogy with our example, let's say we initialize three tasks [A, B, C] responsible for requesting URLs [a.com, b.com, c.com] Respectively. Concurrency simply means that when we start task A and get blocked waiting for the a.com server to reply, we switch the execution context to task B. And when B itself is blocked waiting for b.com response, we either switch to task C or go back to A.
 
 ### Parallelism: 
 
-As for Parralellism, we talk about processes each one running on its own core, memory, and resources. This enables true simultaneous execution. Again to go back to our analogy, in the case of parallelism, each of the processes A, B and C will get to request its own URL on a separate core of the processor.
+Parralellism is when we seperattly allocate cores, memory, and resources for each of our processes. This enables true simultaneous execution. Again to go back to our analogy, in the case of parallelism, we will have three process A, B and C where each will get to request its own URL on a separate core of the processor.
 
 ## how does multithreading work in Python?
 
 Multithreading is a form of concurrency, it is based on the concept of [pre-emptive multitasking](https://en.wikipedia.org/wiki/Preemption_%28computing%29#Preemptive_multitasking) which is basically the operating system handling the execution of multiple [threads](https://en.wikipedia.org/wiki/Thread_(computing)) and deciding under the hood which one gets to be executed.
 
 Here is an implementation of a bot that scraps a list of given URLs using multithreading, we're using the ThreadPoolExecutor class from the python concurrent library:
-
 
 ```python
 from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
@@ -83,12 +78,11 @@ The entire concept is based on something called the event loop, this is an actua
 
 When the task has finished executing, it gets placed in one of the lists depending on his state. The event loop verifies the state of tasks awaiting and proceeds to add them to the ready list in case their awaiting has been completed. After this, it goes back to the initial task of choosing the next ready task to execute.
 
-Now you might be asking, what makes it different from multithreading, the actual difference is that the event loop actually **awaits** for tasks to send a "finished" signal before it moves to the next **ready** task and never interrupts them. This finished signal is what we call a **promise, fortunately with the async/await syntax we don't need to manage these signals**.
+Now you might be asking, what makes it different from multithreading, the actual difference is that the event loop actually **awaits** for tasks to send a "finished" signal before it moves to the next **ready** task and never interrupts them. This finished signal is what we call a **promise**, fortunately with the async/await syntax we don't need to manage these signals.
 
-This is an overly simplified explanation of the Asyncio concept, here is an implementation of a bot that scraps a list of given URLs this time, using the Async optimized python library **aiohttp**:
+This is an overly simplified explanation of the Asyncio concept, here is an implementation of a bot that scraps a list of given URLs this time, using the Async optimized python library *aiohttp*:
 
 ```python
-
 import aiohttp
 import asyncio
 from asgiref import sync
@@ -114,7 +108,6 @@ def async_aiohttp_scraper(urls):
     # call get_all as a sync function to be used in a sync context
     return sync.async_to_sync(get_all)(urls)
 ```
-
 #### Advantages:
 * works well with I/O Bound tasks.
 * no deadlocks or race conditions
@@ -147,8 +140,7 @@ def multiprocessing_scraper(urls):
                         print(f" Error while executing : {e}")
             except Exception as e:
                 print(f'uncaught exception :{e}')
-                
-```
+ ```               
 
 #### Advantages: 
 * Easy to implement
@@ -190,7 +182,6 @@ def masync_multiprocessing_scraper(urls, url_per_asynf):
                 print(f'uncaught exception :{e}')
 
 
-
 def async_aiohttp_scraper(urls):
 
     async def get_all(urls):
@@ -209,8 +200,7 @@ def async_aiohttp_scraper(urls):
 
     # call get_all as a sync function to be used in a sync context
     return sync.async_to_sync(get_all)(urls)
-```
-   
+```   
 
 
 
@@ -230,8 +220,8 @@ I have run the four scrapers featured above on a list of the most visited domain
 
 For the 10 URLS list, the results are the following:
 
-
 ```python
+
 Function 'multithreading_scraper' executed in 5.1004s
 Function 'multiprocessing_scraper' executed in 5.4535s
 Function 'async_aiohttp_scraper' executed in 1.6210s
@@ -240,7 +230,6 @@ Function 'async_multiprocessing_scraper' executed in 4.3092s
 for the async multiprocessing we chose 1 as the number of URLs per core
 
 For the 500 URLs list, the results are the following:
-
 ```python
 Function 'multithreading_scraper' executed in 44.6328s
 Function 'multiprocessing_scraper' executed in 443.7407s
@@ -250,9 +239,3 @@ Function 'async_multiprocessing_scraper' executed in 1607.4033s
 for the async multiprocessing we chose 42 as the number of URLs per core.
 
 As we can see, the Async method wins the race by being the most optimal in making the HTTP GET requests. An important point to clarify is that the speed also varies with regards to the library used.
-
-
-## why is async faster than multithreading?
-
-
-In general, the Asyncio method will always be a bit faster than the threading method. This is because when we use the "await" syntax, we essentially tell our program "hold on, I'll be right back," but our program keeps track of how long it takes us to finish what we're doing. Once we're done, our program will know and pick back up as soon as it's able. Threading in Python allows asynchronicity, but our program could theoretically skip around different threads that may not yet be ready, wasting time if there are threads ready to continue running.
