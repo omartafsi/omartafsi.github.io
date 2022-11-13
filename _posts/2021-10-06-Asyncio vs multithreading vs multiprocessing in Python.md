@@ -5,40 +5,39 @@ published: true
 
 ## Asyncio vs multithreading vs multiprocessing in Python
 
-Let's say you have the task of crawling 500 URLs, one way to do it is to run a for loop where you call 1 URL at a time on every iteration using the following code:
+Let's say you have a task of crawling 500 URLs, one way to do it is to run a for loop where you call 1 URL at a time on every iteration using the following code:
 
 ```python
 for url in url_list:
 	requests.get(url)
 ```
 
+As you may have guessed, this is not the most optimal way to do it, this is because our program will be **blocked on every iteration waiting to receive the HTTP response of the request**.
+What if during the time our program is blocked waiting for the HTTP response, we have it process something else? for instance, send another request. This process can be done via **Asyncio** or **multithreading**.
+Or, because the HTTP request operation is not complex, we code our program in a way that the requests are spread across different cores of our processor instead of having all the cores make one request. This can be achieved with **multiprocessing**.
 
-As you may have guessed, this is not the most optimal way to do it, this is because our program will be blocked on every iteration waiting to receive the HTTP response of the request.
-What if during the time our program is blocked waiting for the HTTP response, we have it process something else, for instance, send another request? This process can be done via **Asyncio** or **multithreading**.
-Or, because the HTTP request operation is not complex, we code our program in a way that the requests are spread across different cores of our processor instead of having all the cores make one request at a time. This can be achieved with **multiprocessing**.
+In this article, we will focus on the intuition behind these techniques in Python while comparing them with practical examples. 
 
-In this article, we will focus on understanding the intuition behind these techniques in Python and comparing them with practical examples. 
-
-First let's explicitly define the concepts of Concurrency and parallelism necessary to understand the differences between Async, multithreading, and multiprocessing.
+First let's explicitly define the concepts of poncurrency and parallelism necessary to understand the differences between Async, multithreading, and multiprocessing.
 
 
 ## Concurrency vs parallelism:
 
 ### Concurrency:  
 
-In python, we can define concurrency as the ability to optimally execute multiple threads in a way that reduces blockage time, a thread here referring to a set of instructions running in order. It is based on the Global Interpreter Lock (GIL) mechanism that ensures only one thread is in the execution state at any point in time, This is because CPython (the reference implementation of python) is not thread-safe. This results in failing to achieve true simultaneous concurrency using multithreading in Python.
+In python, we can define concurrency as the ability to optimally execute multiple threads in a way that reduces blockage time, a thread here referring to a set of instructions running in a specific order. It is related to the Global Interpreter Lock (GIL) mechanism that ensures only one thread is in the execution state at any point in time, This is because CPython (the reference implementation of python) is not thread-safe. This results in failing to achieve true simultaneous concurrency using multithreading in Python.
 
 To make an analogy with our initial example, let's say we initialize three tasks [A, B, C] responsible for requesting URLs [a.com, b.com, c.com] Respectively. Concurrency simply means that when we start task A and get blocked waiting for the a.com server to reply, we switch the execution context to task B. And when B itself is blocked waiting for b.com response, we either switch to task C or go back to A.
 
 ### Parallelism: 
 
-Parallelism is when we separately allocate cores, memory, and resources for each of our processes. This enables true simultaneous execution. Again to go back to our analogy, in the case of parallelism, we will have three processes.
+It is simply when we separately allocate [cores](https://www.computerhope.com/jargon/c/core.htm#:~:text=A%20core%2C%20or%20CPU%20core,eight%20cores%2C%20octa%2Dcore.), memory, and resources for each of our processes. This enables true simultaneous execution. To go back to our analogy, in the case of parallelism, each URL in the list [a.com, b.com, c.com] will have a process A, B and C that will get executed on a separate core of the processor.
 
 ## how does multithreading work in Python?
 
-Multithreading is a form of concurrency, it is based on the concept of [pre-emptive multitasking](https://en.wikipedia.org/wiki/Preemption_%28computing%29#Preemptive_multitasking) which is basically the operating system handling the execution of multiple [threads](https://en.wikipedia.org/wiki/Thread_(computing)) and deciding under the hood which one gets to be executed.
+Multithreading is a form of concurrency, it is based on the concept of [pre-emptive multitasking](https://en.wikipedia.org/wiki/Preemption_%28computing%29#Preemptive_multitasking) which is basically the operating system handling the execution of multiple [threads](https://en.wikipedia.org/wiki/Thread_(computing)) and deciding under the hood which one gets to be executed next.
 
-Here is a a function that scraps a list of given URLs using multithreading, we're using the ThreadPoolExecutor class from the python concurrent library:
+Here is a function that scraps a list of given URLs using multithreading, we're using the ThreadPoolExecutor class from the python concurrent library:
 
 ```python
 from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
@@ -134,7 +133,8 @@ def multiprocessing_scraper(urls):
             try:
                 for task in as_completed(tasks):
                     try:
-                        task.result()
+                        resp = task.result()
+                        # ADD RESPONSE MANIPULATION CODE HERE
                     except Exception as e:
                         print(f" Error while executing : {e}")
             except Exception as e:
