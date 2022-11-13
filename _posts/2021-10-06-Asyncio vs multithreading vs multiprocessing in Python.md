@@ -5,7 +5,7 @@ published: true
 
 ## Asyncio vs multithreading vs multiprocessing in Python
 
-Let's say you have the task of crawling a list of 500 URLs, one way to do it is to run a for loop where you call 1 URL at a time on every iteration using the following code:
+Let's say you have the task of crawling 500 URLs, one way to do it is to run a for loop where you call 1 URL at a time on every iteration using the following code:
 
 ```python
 
@@ -14,13 +14,13 @@ for url in url_list:
 ```
 
 
-As you may have guessed, this is not the most optimal way to do it, this is because our program will be blocked on every iteration waiting to receive the HTTP response of the requests.
+As you may have guessed, this is not the most optimal way to do it, this is because our program will be blocked on every iteration waiting to receive the HTTP response of the request.
+What if during the time our program is blocked waiting for the HTTP response, we have it process something else, for instance, send another request? This process can be done via **Asyncio** or **multithreading**.
+Or, because the HTTP request operation is not complex, we code our program in a way that the requests are spread across different cores of our processor instead of having all the cores make one request at a time. This can be achieved with **multiprocessing**.
 
-What if during the time our program is blocked waiting for the HTTP response, we have it process something else, for instance, send another request. This can be done via **Asyncio** and **multithreading**.
+In this article, we will focus on understanding the intuition behind these techniques and comparing them with practical examples. 
 
-Or, because the HTTP request operation is not complex, we code our program in a way that the requests are spread across different cores of our processor instead of having all the cores making one request at a time. This can be achieved with **multiprocessing**.
-
-Before going into comparison, let's explicitly define some concepts that are necessary to understand the differences between Async, multithreading, and multiprocessing.
+First let's explicitly define some concepts that will be necessary to understand the differences between Async, multithreading, and multiprocessing.
 
 
 ## Concurrency vs parallelism:
