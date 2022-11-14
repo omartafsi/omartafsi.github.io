@@ -37,13 +37,13 @@ It is simply when we separately allocate [cores](https://www.computerhope.com/ja
 
 Multithreading is a form of concurrency, it is based on the concept of [pre-emptive multitasking](https://en.wikipedia.org/wiki/Preemption_%28computing%29#Preemptive_multitasking) which is basically the operating system handling the execution of multiple [threads](https://en.wikipedia.org/wiki/Thread_(computing)) and deciding under the hood which one gets to be executed next.
 
-Here is a function that scraps a list of given URLs using multithreading, we're using the ThreadPoolExecutor class from the python concurrent library:
+Here is a function that requests a list of given URLs using multithreading, we're using the ThreadPoolExecutor class from the python concurrent library:
 
 ```python
 from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 import requests
 
-def multithreading_scraper(urls):
+def multithreading_request(urls):
     threads = []
     with ThreadPoolExecutor() as executor:
         for url in urls:
@@ -78,14 +78,14 @@ When the task has finished executing, it gets placed in one of the lists dependi
 
 Now you might be asking, what makes it different from multithreading, the actual difference is that the event loop actually **awaits** for tasks to send a "finished" signal before it moves to the next **ready** task and never interrupts them. This finished signal is what we call a **promise**, fortunately with the async/await syntax we don't need to manage these signals.
 
-This is an overly simplified explanation of the Asyncio concept, here is a function that scraps a list of given URLs this time, using the Async-optimized python library **aiohttp**:
+This is an overly simplified explanation of the Asyncio concept, here is a function that requests a list of given URLs this time, using the Async-optimized python library **aiohttp**:
 
 ```python
 import aiohttp
 import asyncio
 from asgiref import sync
 
-def async_aiohttp_scraper(urls):
+def async_aiohttp_request(urls):
 
     async def get_all(urls):
         async with aiohttp.ClientSession() as session:
@@ -125,7 +125,7 @@ Here is a function that requests a list of given URLs, this time, using multipro
 ```python
 from concurrent.futures import , as_completed, ProcessPoolExecutor
 
-def multiprocessing_scraper(urls):
+def multiprocessing_request(urls):
     tasks = []
     with ProcessPoolExecutor() as executor:
         for url in urls:
@@ -164,12 +164,12 @@ from asgiref import sync
 
 
 
-def masync_multiprocessing_scraper(urls, url_per_asynf):
+def async_multiprocessing_request(urls, url_per_asynf):
     tasks = []
     with ProcessPoolExecutor() as executor:
         for i in range(0, len(urls), url_per_asynf):
-            list_urls_to_scrap = urls[i: i + url_per_asynf]
-            tasks.append(executor.submit(async_aiohttp_scraper, list_urls_to_scrap))
+            list_urls_to_request = urls[i: i + url_per_asynf]
+            tasks.append(executor.submit(async_aiohttp_request, list_urls_to_request))
             try:
                 for task in as_completed(tasks):
                     try:
@@ -180,7 +180,7 @@ def masync_multiprocessing_scraper(urls, url_per_asynf):
                 print(f'uncaught exception :{e}')
 
 
-def async_aiohttp_scraper(urls):
+def async_aiohttp_request(urls):
 
     async def get_all(urls):
         async with aiohttp.ClientSession() as session:
@@ -214,24 +214,24 @@ def async_aiohttp_scraper(urls):
 ## Speed testing multithreading vs async vs multiprocessing?
 
 
-I have run the four scrapers featured above on a list of the most visited domains on the internet, I ran two tests, one where the list only contains the top 10 and another containing 500:
+I have run the four functions featured above on a list of the most visited domains on the internet, I ran two tests, one where the list only contains the top 10 and another containing 500:
 
 For the 10 URLS list, the results are the following:
 
 ```python
-Function 'multithreading_scraper' executed in 5.1004s
-Function 'multiprocessing_scraper' executed in 5.4535s
-Function 'async_aiohttp_scraper' executed in 1.6210s
-Function 'async_multiprocessing_scraper' executed in 4.3092s
+Function 'multithreading_request' executed in 5.1004s
+Function 'multiprocessing_request' executed in 5.4535s
+Function 'async_aiohttp_request' executed in 1.6210s
+Function 'async_multiprocessing_request' executed in 4.3092s
 ```
 for the async multiprocessing we chose 1 as the number of URLs per core
 
 For the 500 URLs list, the results are the following:
 ```python
-Function 'multithreading_scraper' executed in 44.6328s
-Function 'multiprocessing_scraper' executed in 443.7407s
-Function 'async_aiohttp_scraper' executed in 10.3853s
-Function 'async_multiprocessing_scraper' executed in 1607.4033s
+Function 'multithreading_request' executed in 44.6328s
+Function 'multiprocessing_request' executed in 443.7407s
+Function 'async_aiohttp_request' executed in 10.3853s
+Function 'async_multiprocessing_request' executed in 1607.4033s
 ```
 for the async multiprocessing we chose 42 as the number of URLs per core.
 
