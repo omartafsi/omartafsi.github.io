@@ -18,7 +18,7 @@ Or, because the HTTP request operation is not complex, we code our program in a 
 
 In this article, we will focus on the intuition behind these techniques in Python while comparing them with practical examples. 
 
-First let's explicitly define the concepts of poncurrency and parallelism necessary to understand the differences between Async, multithreading, and multiprocessing.
+Before we dive into comparaisons, we need define the concepts of concurrency and parallelism necessary to understand the differences between Async, multithreading, and multiprocessing.
 
 
 ## Concurrency vs parallelism:
